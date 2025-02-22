@@ -138,6 +138,40 @@ def transfer_money():
         "status": "initiated",
     }), 200
 
+    # fraud_probability = preprocess_transaction(data)
+    # is_fraud = fraud_probability > 0.5
+
+    # # Store transaction in the database
+    # transaction = Transaction(
+    #     from_account_id=from_account.id,
+    #     to_account_id=to_account.id,
+    #     amount=amount,
+    #     risk_score=fraud_probability,
+    #     is_flagged=is_fraud,
+    #     flag_reason="High Fraud Risk" if is_fraud else None
+    # )
+
+    # db.session.add(transaction)
+
+    # if is_fraud:
+    #     return jsonify({
+    #         "message": "Transaction flagged as suspicious",
+    #         "fraud_probability": fraud_probability,
+    #         "status": "Needs Review"
+    #     }), 403
+
+    # # Process transfer if not fraudulent
+    # from_account.balance -= amount
+    # to_account.balance += amount
+    # db.session.commit()
+
+    # return jsonify({
+    #     "message": "Transfer successful",
+    #     "fraud_probability": fraud_probability,
+    #     "status": "Approved"
+    # }), 200
+
+
 # Admin Routes
 @api.route('/admin/transactions', methods=['GET'])
 @admin_required()
