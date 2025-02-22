@@ -16,7 +16,7 @@ const Login = ({ setUser }) => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://192.168.137.214:5000/api/auth/login",
+        "http://192.168.64.152:5000/api/auth/login",
         form
       );
       const token = res.data.token;

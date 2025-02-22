@@ -4,7 +4,8 @@ import { useParams } from "react-router-dom";
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
   const { accountId } = useParams();
-  const token = localStorage.getItem("token");
+
+  let token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) return;
@@ -12,7 +13,7 @@ const Transactions = () => {
     const fetchTransactions = async () => {
       try {
         const response = await fetch(
-          `http://192.168.137.214:5000/api/transactions/${accountId}`,
+          `http://192.168.64.152:5000/api/transactions/${accountId}`,
           {
             method: "GET",
             headers: {

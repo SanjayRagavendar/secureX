@@ -65,7 +65,7 @@ const Layout = ({ user, children }) => {
   return (
     <>
       <div className='flex justify-center'>
-        <div className='lg:w-[80%] lg:h-[80%] md:w-[100%] md:h-[100%]'>
+        <div className='w-[100%] h-[100%]'>
           {!hideNavbar && user && <Navbar />}
           {children}
         </div>

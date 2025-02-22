@@ -17,10 +17,12 @@ const Transfer = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://192.168.137.214:5000/api/transfer",
+        "http://192.168.64.152:5000/api/transfer",
         form,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          },
         }
       );
       setMessage(res.data.message);

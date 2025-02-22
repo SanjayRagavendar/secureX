@@ -22,7 +22,7 @@ const Dashboard = () => {
         return;
       }
 
-      const res = await axios.get("http://192.168.137.214:5000/api/accounts", {
+      const res = await axios.get("http://192.168.64.152:5000/api/accounts", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -51,7 +51,7 @@ const Dashboard = () => {
       }
 
       const res = await axios.post(
-        "http://192.168.137.214:5000/api/accounts",
+        "http://192.168.64.152:5000/api/accounts",
         {
           account_type: accountType,
           initial_balance: balance || 0,
