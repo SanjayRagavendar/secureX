@@ -16,7 +16,7 @@ from datetime import datetime, time
 
 # Load environment variables
 load_dotenv()
-GOOGLE_API_KEY = "AIzaSyBKV6w3wgRPMKmuXdxrDYkAhNkqgFA79lU"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API")
 
 # Flask App and SQLite Configuration
 app = Flask(_name_)
