@@ -5,6 +5,14 @@ from datetime import datetime
 from decorators import admin_required, user_account_access
 import random
 import pandas as pd
+import kafkaProducer
+import json
+
+producer = KafkaProducer(
+    bootstrap_servers='localhost:9092',
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+)
+
 
 
 api = Blueprint('api', __name__)
@@ -93,44 +101,41 @@ def get_balance(account_id):
 @jwt_required()
 def transfer_money():
     data = request.get_json()
-    from_account = Account.query.get_or_404(data['from_account'])
-    to_account = Account.query.get_or_404(data['to_account'])
-    amount = data['amount']
+    print(data)
+        
+    # try:
+    from_account = Account.query.filter_by(account_number=data.get('from_account')).first_or_404()
+    print(from_account)
+    to_account = Account.query.filter_by(account_number=data.get('to_account')).first_or_404()
+    print(to_account)
+    amount = float(data.get('amount'))  # Convert amount to float
+    # except (ValueError, TypeError):
+    #     return jsonify({"error": "Invalid data format"}), 400
+
+    if from_account.user_id != int(get_jwt_identity()):
+        return jsonify({"error": "Unauthorized access"}), 403
 
     if from_account.balance < amount:
         return jsonify({"error": "Insufficient funds"}), 400
 
-    # Predict fraud probability
-    fraud_probability = preprocess_transaction(data)
-    is_fraud = fraud_probability > 0.5
+    # from_account.balance -= amount
+    # to_account.balance += amount
+    
+    # transaction = Transaction(
+    #     from_account_id=from_account.id,
+    #     to_account_id=to_account.id,
+    #     amount=amount,
+    #     transaction_type='transfer'
+    # )
+    producer.send('transfer_requests', data)
+    producer.flush()
 
-    # Store transaction in the database
-    transaction = Transaction(
-        from_account_id=from_account.id,
-        to_account_id=to_account.id,
-        amount=amount,
-        risk_score=fraud_probability,
-        is_flagged=is_fraud,
-        flag_reason="High Fraud Risk" if is_fraud else None
-    )
-
-    db.session.add(transaction)
-
-    if is_fraud:
-        return jsonify({
-            "message": "Transaction flagged as suspicious",
-            "fraud_probability": fraud_probability,
-            "status": "Needs Review"
-        }), 403
-
-    from_account.balance -= amount
-    to_account.balance += amount
-    db.session.commit()
+    # db.session.add(transaction)
+    # db.session.commit()
 
     return jsonify({
-        "message": "Transfer successful",
-        "fraud_probability": fraud_probability,
-        "status": "Approved"
+        "message": "it is initiated",
+        "status": "initiated",
     }), 200
 
 # Admin Routes
