@@ -23,7 +23,7 @@ class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account_number = db.Column(db.String(20), unique=True, nullable=False)
     balance = db.Column(db.Float, default=0.0)
-    account_type = db.Column(db.String(20), nullable=False)
+    account_type = db.Column(db.Enum('Savings', 'Current'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -37,6 +37,16 @@ class Account(db.Model):
                                           backref='receiver',
                                           lazy=True)
     cards = db.relationship('Card', backref='account', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'account_number': "X"*8+self.account_number[:4],
+            'balance': self.balance,
+            'account_type': self.account_type,
+            'user_id': self.user_id,
+            'created_at': self.created_at.isoformat()
+        }
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)

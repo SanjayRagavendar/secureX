@@ -3,6 +3,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from models import db, User, Account, Transaction
 from datetime import datetime
 from decorators import admin_required, user_account_access
+import random
+import pandas as pd
+
 
 api = Blueprint('api', __name__)
 
@@ -44,6 +47,7 @@ def create_account():
     user_id = get_jwt_identity()
     data = request.get_json()
     account = Account(
+        account_number = str(random.randint(100000000000, 999999999999)),
         user_id=user_id,
         account_type=data['account_type'],
         balance=data.get('initial_balance', 0)
@@ -92,21 +96,42 @@ def transfer_money():
     from_account = Account.query.get_or_404(data['from_account'])
     to_account = Account.query.get_or_404(data['to_account'])
     amount = data['amount']
-    
-    if from_account.balance >= amount:
-        from_account.balance -= amount
-        to_account.balance += amount
-        
-        transaction = Transaction(
-            from_account_id=from_account.id,
-            to_account_id=to_account.id,
-            amount=amount,
-            transaction_type='transfer'
-        )
-        db.session.add(transaction)
-        db.session.commit()
-        return jsonify({"message": "Transfer successful"}), 200
-    return jsonify({"error": "Insufficient funds"}), 400
+
+    if from_account.balance < amount:
+        return jsonify({"error": "Insufficient funds"}), 400
+
+    # Predict fraud probability
+    fraud_probability = preprocess_transaction(data)
+    is_fraud = fraud_probability > 0.5
+
+    # Store transaction in the database
+    transaction = Transaction(
+        from_account_id=from_account.id,
+        to_account_id=to_account.id,
+        amount=amount,
+        risk_score=fraud_probability,
+        is_flagged=is_fraud,
+        flag_reason="High Fraud Risk" if is_fraud else None
+    )
+
+    db.session.add(transaction)
+
+    if is_fraud:
+        return jsonify({
+            "message": "Transaction flagged as suspicious",
+            "fraud_probability": fraud_probability,
+            "status": "Needs Review"
+        }), 403
+
+    from_account.balance -= amount
+    to_account.balance += amount
+    db.session.commit()
+
+    return jsonify({
+        "message": "Transfer successful",
+        "fraud_probability": fraud_probability,
+        "status": "Approved"
+    }), 200
 
 # Admin Routes
 @api.route('/admin/transactions', methods=['GET'])
