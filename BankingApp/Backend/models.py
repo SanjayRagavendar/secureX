@@ -6,13 +6,11 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(80), unique=True, nullable=False)
-    last_name = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256))
     role = db.Column(db.Enum('admin', 'user'), default='user')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    aadhar = db.Column(db.Integer, unique=True, nullable=False)
     accounts = db.relationship('Account', backref='user', lazy=True)
     
     def set_password(self, password):
@@ -30,16 +28,15 @@ class Account(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # relationships
-    transactions = db.relationship('Transaction', backref='account', lazy=True)
+    transactions_sent = db.relationship('Transaction',
+                                      foreign_keys='Transaction.from_account_id',
+                                      backref='sender',
+                                      lazy=True)
+    transactions_received = db.relationship('Transaction',
+                                          foreign_keys='Transaction.to_account_id',
+                                          backref='receiver',
+                                          lazy=True)
     cards = db.relationship('Card', backref='account', lazy=True)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'account_type': self.account_type,
-            'balance': self.balance,
-            'created_at': self.created_at.isoformat()
-        }
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,8 +49,9 @@ class Transaction(db.Model):
     is_flagged = db.Column(db.Boolean, default=False)
     flag_reason = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # relationships
+    # relationships with explicit foreign keys
     from_account_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
     to_account_id = db.Column(db.Integer, db.ForeignKey('account.id'), nullable=False)
 

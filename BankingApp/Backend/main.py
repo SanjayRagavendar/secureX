@@ -10,7 +10,7 @@ app.config['JWT_SECRET_KEY'] = 'j2xvP6rAfwWpjV1UAugs3idnS6Z9Q6Z2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
-CORS(app, origins="*")
+CORS(app, resources={r"/api/*": {"origins": ["*"], "methods": ["GET", "POST", "PUT", "DELETE"], "allow_headers": ["Content-Type", "Authorization"], "supports_credentials": True}})
 jwt = JWTManager(app)
 
 app.register_blueprint(api, url_prefix='/api')
@@ -24,4 +24,4 @@ with app.app_context():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
